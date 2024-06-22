@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <ItemGroup>
-    <ProjectReference Include="..\OriginShiftMazeGenerator.Core\OriginShiftMazeGenerator.Core.csproj" />
+    <ProjectReference Include="../OriginShiftMazeGenerator.Core/OriginShiftMazeGenerator.Core.csproj" />
   </ItemGroup>
 
   <PropertyGroup>
