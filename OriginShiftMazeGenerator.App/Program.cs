@@ -1,13 +1,13 @@
-// See https://aka.ms/new-console-template for more information
+﻿// See https://aka.ms/new-console-template for more information
 using OriginShiftMazeGenerator.Core;
 
 Console.WriteLine("Hello, World!");
 
-var generator = new Generator<Cell>(GenerateCells(5, 5));
+var generator = new Generator<Cell>(GenerateCells(150, 30));
 
-generator.Setup();
+generator.Setup(0);
 
-await DrawLoop(generator, TimeSpan.FromMilliseconds(500));
+await DrawLoop(generator, TimeSpan.FromMilliseconds(0));
 
 static Cell[,] GenerateCells(int width, int height)
 {
