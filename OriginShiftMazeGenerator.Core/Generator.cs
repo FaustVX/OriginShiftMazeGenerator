@@ -8,8 +8,8 @@ using PrimaryParameter.SG;
 public partial class Generator<TCell>
     (
         [Field(Type = typeof(ICellGeneration[,]), AssignFormat = "System.Runtime.CompilerServices.Unsafe.As<ICellGeneration[,]>({0})")]
-        [Property(AssignFormat = "{0}.GetLength(0)", Name = nameof(Generator<TCell>.Width), Type = typeof(int))]
-        [Property(AssignFormat = "{0}.GetLength(1)", Name = nameof(Generator<TCell>.Height), Type = typeof(int))]
+        [Property(AssignFormat = "{0}.GetLength(0)", Name = nameof(Generator<TCell>.Width), Type = typeof(int), WithoutBackingStorage = true, Setter = "")]
+        [Property(AssignFormat = "{0}.GetLength(1)", Name = nameof(Generator<TCell>.Height), Type = typeof(int), WithoutBackingStorage = true, Setter = "")]
         TCell[,] cells
     )
 where TCell : ICell
@@ -20,12 +20,14 @@ where TCell : ICell
 
     public TCell Origin { get; private set; } = default!;
 
-    public void Setup()
+    public void Setup(int initialMazeGenerationLoop = 10)
     {
         GenerateRows(_cells);
         GenerateFirstColumn(_cells);
         GenerateNeighbours(_cells);
         Origin = (TCell)_cells[0, 0];
+        for (var i = 0; i < initialMazeGenerationLoop; i++)
+            InitialMaze();
 
         void GenerateRows(ICellGenerationPhase[,] cells)
         {
@@ -48,6 +50,12 @@ where TCell : ICell
                 cell.Neighbours = neighboursPos
                     .Where(pos => ((uint)pos.Item1 - Width, (uint)pos.Item2 - Height) is (< 0, < 0))
                     .GetIn((ICell[,])_cells);
+        }
+
+        void InitialMaze()
+        {
+            for (var i = Width * Height; i >= 0 ; i--)
+                MoveOrigin();
         }
     }
 
