@@ -1,20 +1,22 @@
-﻿// See https://aka.ms/new-console-template for more information
+// See https://aka.ms/new-console-template for more information
 using OriginShiftMazeGenerator.Core;
 
 Console.WriteLine("Hello, World!");
 
-var generator = new Generator<Cell>(new Cell[,]
-{
-    { new() { I = (0, 0) }, new() { I = (0, 1) }, new() { I = (0, 2) } , new() { I = (0, 3) } , new() { I = (0, 4) } },
-    { new() { I = (1, 0) }, new() { I = (1, 1) }, new() { I = (1, 2) } , new() { I = (1, 3) } , new() { I = (1, 4) } },
-    { new() { I = (2, 0) }, new() { I = (2, 1) }, new() { I = (2, 2) } , new() { I = (2, 3) } , new() { I = (2, 4) } },
-    { new() { I = (3, 0) }, new() { I = (3, 1) }, new() { I = (3, 2) } , new() { I = (3, 3) } , new() { I = (3, 4) } },
-    { new() { I = (4, 0) }, new() { I = (4, 1) }, new() { I = (4, 2) } , new() { I = (4, 3) } , new() { I = (4, 4) } },
-});
+var generator = new Generator<Cell>(GenerateCells(5, 5));
 
 generator.Setup();
 
 await DrawLoop(generator, TimeSpan.FromMilliseconds(500));
+
+static Cell[,] GenerateCells(int width, int height)
+{
+    var maze = new Cell[width, height];
+    for (int x = 0; x < width; x++)
+        for (int y = 0; y < height; y++)
+            maze[x, y] = new Cell() { I = (x, y) };
+    return maze;
+}
 
 static async Task DrawLoop(Generator<Cell> maze, TimeSpan duration)
 {
