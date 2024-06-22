@@ -1,4 +1,4 @@
-﻿// See https://aka.ms/new-console-template for more information
+// See https://aka.ms/new-console-template for more information
 using OriginShiftMazeGenerator.Core;
 
 Console.WriteLine("Hello, World!");
@@ -10,7 +10,9 @@ var generator = new Generator<Cell>(new Cell[3, 3]
     { new() { I = 7 }, new() { I = 8 }, new() { I = 9 } },
 });
 generator.Setup();
+generator.MoveOrigin();
 ;
+
 public sealed record class Cell : ICellGeneration
 {
     public required int I { get; init; }
@@ -18,5 +20,5 @@ public sealed record class Cell : ICellGeneration
     public IEnumerable<ICell> Neighbours { get; private set; } = [];
 
     IEnumerable<ICell> ICellGenerationPhase.Neighbours { set => Neighbours = value; }
-    ICell ICellGenerationPhase.PointTo { set => PointTo = value; }
+    ICell? ICellGenerationPhase.PointTo { set => PointTo = value; }
 }

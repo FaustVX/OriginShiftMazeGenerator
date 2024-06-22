@@ -53,7 +53,10 @@ where TCell : ICell
 
     public void MoveOrigin()
     {
-
+        var next = Random.Shared.Pickitem(Origin.Neighbours);
+        ((ICellGenerationPhase)Origin).PointTo = next;
+        Origin = (TCell)next;
+        ((ICellGenerationPhase)next).PointTo = null;
     }
 }
 
@@ -71,5 +74,11 @@ file static class Ext
     {
         foreach (var (x, y) in pos)
             yield return array[x, y];
+    }
+
+    public static T Pickitem<T>(this Random rng, IEnumerable<T> values)
+    {
+        var count = values.TryGetNonEnumeratedCount(out var c) ? c : values.Count();
+        return values.ElementAt(rng.Next(count));
     }
 }

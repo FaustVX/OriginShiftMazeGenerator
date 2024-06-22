@@ -9,7 +9,7 @@ public interface ICell
 public interface ICellGenerationPhase
 {
     public IEnumerable<ICell> Neighbours { set; }
-    public ICell PointTo { set; }
+    public ICell? PointTo { set; }
 }
 
 public interface ICellGeneration : ICell, ICellGenerationPhase
