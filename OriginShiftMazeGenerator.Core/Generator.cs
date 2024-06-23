@@ -10,7 +10,9 @@ public partial class Generator<TCell>
         [Field(Type = typeof(ICellGeneration[,]), AssignFormat = "System.Runtime.CompilerServices.Unsafe.As<ICellGeneration[,]>({0})")]
         [Property(AssignFormat = "{0}.GetLength(0)", Name = nameof(Generator<TCell>.Width), Type = typeof(int), WithoutBackingStorage = true, Setter = "")]
         [Property(AssignFormat = "{0}.GetLength(1)", Name = nameof(Generator<TCell>.Height), Type = typeof(int), WithoutBackingStorage = true, Setter = "")]
-        TCell[,] cells
+        TCell[,] cells,
+        [Field(AssignFormat = "{0} ?? System.Random.Shared")]
+        Random seed = null!
     )
 where TCell : ICell
 {
@@ -61,7 +63,7 @@ where TCell : ICell
 
     public void MoveOrigin()
     {
-        var next = Random.Shared.Pickitem(Origin.Neighbours);
+        var next = _seed.Pickitem(Origin.Neighbours);
         ((ICellGenerationPhase)Origin).PointTo = next;
         Origin = (TCell)next;
         ((ICellGenerationPhase)next).PointTo = null;

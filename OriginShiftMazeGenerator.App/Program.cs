@@ -3,9 +3,9 @@ using OriginShiftMazeGenerator.Core;
 
 Console.WriteLine("Hello, World!");
 
-var generator = new Generator<Cell>(GenerateCells(150, 30));
+var generator = new Generator<Cell>(GenerateCells(150, 30), new(0));
 
-generator.Setup(0);
+generator.Setup(10);
 
 await DrawLoop(generator, TimeSpan.FromMilliseconds(0));
 
