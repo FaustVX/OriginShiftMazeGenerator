@@ -20,6 +20,9 @@ where TCell : ICell
 
     public TCell[,] Cells => Unsafe.As<TCell[,]>(_cells);
 
+    public ref TCell this[Index x, Index y] => ref Cells[x.GetOffset(Width), y.GetOffset(Height)];
+    public ref TCell this[(int x, int y) pos] => ref Cells[pos.x, pos.y];
+
     public TCell Origin { get; private set; } = default!;
 
     public void Setup(int initialMazeGenerationLoop = 10)
@@ -28,8 +31,7 @@ where TCell : ICell
         GenerateFirstColumn(_cells);
         GenerateNeighbours(_cells);
         Origin = (TCell)_cells[0, 0];
-        for (var i = 0; i < initialMazeGenerationLoop; i++)
-            InitialMaze();
+        Regenerate(initialMazeGenerationLoop);
 
         void GenerateRows(ICellGenerationPhase[,] cells)
         {
@@ -53,12 +55,12 @@ where TCell : ICell
                     .Where(pos => ((uint)pos.Item1 - Width, (uint)pos.Item2 - Height) is (< 0, < 0))
                     .GetIn((ICell[,])_cells);
         }
+    }
 
-        void InitialMaze()
-        {
-            for (var i = Width * Height; i >= 0 ; i--)
-                MoveOrigin();
-        }
+    public void Regenerate(int generationLoop = 10)
+    {
+        for (var i = Width * Height * generationLoop; i >= 0 ; i--)
+            MoveOrigin();
     }
 
     public void MoveOrigin()

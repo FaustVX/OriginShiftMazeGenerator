@@ -3,11 +3,11 @@ using OriginShiftMazeGenerator.Core;
 
 Console.WriteLine("Hello, World!");
 
-var generator = new Generator<Cell>(GenerateCells(150, 30), new(0));
+var generator = new Generator<Cell>(GenerateCells(10, 10), new(0));
 
-generator.Setup(10);
+generator.Setup(0);
 
-await DrawLoop(generator, TimeSpan.FromMilliseconds(0));
+DrawLoop(generator);
 
 static Cell[,] GenerateCells(int width, int height)
 {
@@ -18,17 +18,22 @@ static Cell[,] GenerateCells(int width, int height)
     return maze;
 }
 
-static async Task DrawLoop(Generator<Cell> maze, TimeSpan duration)
+static void DrawLoop(Generator<Cell> maze)
 {
     Console.CursorVisible = false;
     Console.Clear();
+    maze.Regenerate();
+    foreach (var cell in maze.Cells)
+        cell.IsVisited = false;
     DrawMaze(maze);
+    var pos = maze.Cells[0, 0];
     while (true)
     {
-        if (duration.TotalMilliseconds > 0)
-            await Task.Delay(duration);
-        maze.MoveOrigin();
-        UpdateMaze(maze);
+        pos.IsVisited = true;
+        UpdatePos(maze, pos);
+        if (pos == maze[^1, ^1])
+            DrawLoop(maze);
+        pos = Move(pos, maze);
     }
 
     static void DrawMaze(Generator<Cell> maze)
@@ -42,18 +47,48 @@ static async Task DrawLoop(Generator<Cell> maze, TimeSpan duration)
         }
     }
 
-    static void UpdateMaze(Generator<Cell> maze)
+    static void UpdatePos(Generator<Cell> maze, Cell position)
     {
         ReadOnlySpan<(int x, int y)> _offsets = [(-1, 0), (1, 0), (0, -1), (0, 1)];
-        var origin = maze.Origin.Pos;
+        var origin = position.Pos;
         foreach (var offset in _offsets)
         {
             var (x, y) = (origin.x + offset.x, origin.y + offset.y);
             if (((uint)x - maze.Width, (uint)y - maze.Height) is (< 0, < 0))
-            {
-                Console.SetCursorPosition(x, y);
-                Console.Write(maze.Cells[x, y].GetDirection());
-            }
+                Write(x, y, maze[x, y].GetDirection(), maze[x, y].IsVisited ? ConsoleColor.Magenta : Console.ForegroundColor);
+        }
+        Write(origin.x, origin.y, maze[origin].GetDirection(), ConsoleColor.Blue);
+
+        static void Write(int x, int y, char symbol, ConsoleColor foreground)
+        {
+            Console.SetCursorPosition(x, y);
+            (var color, Console.ForegroundColor) = (Console.ForegroundColor, foreground);
+            Console.Write(symbol);
+            Console.ForegroundColor = color;
+        }
+    }
+
+    static Cell Move(Cell cell, Generator<Cell> maze)
+    {
+        var move = Console.ReadKey(intercept: true).Key switch
+        {
+            ConsoleKey.LeftArrow => (-1, 0),
+            ConsoleKey.UpArrow => (0, -1),
+            ConsoleKey.RightArrow => (1, 0),
+            ConsoleKey.DownArrow => (0, 1),
+            _ => (0, 0),
+        };
+
+        try
+        {
+            var to = maze[move.Item1 + cell.Pos.x, move.Item2 + cell.Pos.y];
+            if (cell.PointTo?.Pos == to.Pos || to.PointTo?.Pos == cell.Pos)
+                return to;
+            return Move(cell, maze);
+        }
+        catch (Exception e) when (e is IndexOutOfRangeException or ArgumentOutOfRangeException)
+        {
+            return Move(cell, maze);
         }
     }
 }
@@ -64,6 +99,7 @@ public sealed record class Cell : ICellGeneration
     public Cell? PointTo { get; private set; }
     ICell? ICell.PointTo => PointTo;
     public IEnumerable<ICell> Neighbours { get; private set; } = [];
+    public bool IsVisited { get; set; }
 
     IEnumerable<ICell> ICellGenerationPhase.Neighbours { set => Neighbours = value; }
     ICell? ICellGenerationPhase.PointTo { set => PointTo = (Cell?)value; }
